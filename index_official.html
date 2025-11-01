@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Reports - System Zgłoszeń</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #5865F2;
+            --primary-dark: #4752C4;
+            --primary-light: #7983f5;
+            --secondary: #57F287;
+            --secondary-dark: #47c46f;
+            --danger: #ED4245;
+            --danger-dark: #d03538;
+            --light: #f8f9fa;
+            --dark: #2C2F33;
+            --darker: #23272A;
+            --gray: #99AAB5;
+            --gray-dark: #72767d;
+            --discord-blurple: #5865F2;
+            --discord-green: #57F287;
+            --discord-red: #ED4245;
+            --discord-yellow: #FEE75C;
+            --discord-gray: #4f545c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            line-height: 1.6;
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            background: rgba(35, 39, 42, 0.7);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--discord-blurple), var(--discord-green), var(--discord-red), var(--discord-yellow));
+        }
+        
+        h1 {
+            color: var(--light);
+            margin-bottom: 15px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .description {
+            color: var(--gray);
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .discord-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
+            margin-top: 10px;
+        }
+        
+        .discord-link:hover {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6);
+        }
+        
+        .card {
+            background: rgba(35, 39, 42, 0.7);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card h2 {
+            margin-bottom: 20px;
+            color: var(--light);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2 i {
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--light);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 33, 36, 0.8);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.3);
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+        
+        .input-with-icon input {
+            padding-left: 45px;
+        }
+        
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        
+        .btn i {
+            font-size: 1.1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+            color: var(--darker);
+            box-shadow: 0 4px 15px rgba(87, 242, 135, 0.4);
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, #6df49c 0%, var(--secondary) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(87, 242, 135, 0.6);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(237, 66, 69, 0.4);
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #f05557 0%, var(--danger) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(237, 66, 69, 0.6);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: rgba(35, 39, 42, 0.7);
+            border-radius: 12px;
+            padding: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab {
+            padding: 14px 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            flex: 1;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .report, .praise {
+            border-left: 4px solid;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            background: rgba(30, 33, 36, 0.6);
+            transition: transform 0.2s ease;
+        }
+        
+        .report:hover, .praise:hover {
+            transform: translateX(5px);
+        }
+        
+        .report {
+            border-left-color: var(--danger);
+            box-shadow: 0 4px 15px rgba(237, 66, 69, 0.2);
+        }
+        
+        .praise {
+            border-left-color: var(--secondary);
+            box-shadow: 0 4px 15px rgba(87, 242, 135, 0.2);
+        }
+        
+        .report-header, .praise-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .user-id {
+            color: var(--primary-light);
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .date {
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .search-container {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+        
+        .search-input {
+            flex-grow: 1;
+        }
+        
+        .search-results {
+            margin-top: 20px;
+        }
+        
+        .user-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 20px;
+            background: rgba(30, 33, 36, 0.8);
+            border-radius: 12px;
+            flex: 1;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .reports-count .stat-value {
+            color: var(--danger);
+        }
+        
+        .praises-count .stat-value {
+            color: var(--secondary);
+        }
+        
+        .user-card {
+            margin-bottom: 30px;
+        }
+        
+        .user-card h3 {
+            margin-bottom: 15px;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px;
+            color: var(--gray);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--gray-dark);
+        }
+        
+        .type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .type-report {
+            background: rgba(237, 66, 69, 0.2);
+            color: var(--danger);
+        }
+        
+        .type-praise {
+            background: rgba(87, 242, 135, 0.2);
+            color: var(--secondary);
+        }
+        
+        @media (max-width: 768px) {
+            .user-stats {
+                flex-direction: column;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .search-container {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        .floating-bg {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            opacity: 0.1;
+            z-index: -1;
+            animation: float 20s infinite linear;
+        }
+        
+        .floating-bg:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            animation-delay: 0s;
+        }
+        
+        .floating-bg:nth-child(2) {
+            top: 60%;
+            right: 10%;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            animation-delay: -5s;
+        }
+        
+        .floating-bg:nth-child(3) {
+            bottom: 10%;
+            left: 20%;
+            background: radial-gradient(circle, var(--danger) 0%, transparent 70%);
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(20px, 20px) rotate(90deg);
+            }
+            50% {
+                transform: translate(0, 40px) rotate(180deg);
+            }
+            75% {
+                transform: translate(-20px, 20px) rotate(270deg);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-bg"></div>
+    <div class="floating-bg"></div>
+    <div class="floating-bg"></div>
+    
+    <div class="container">
+        <header>
+            <h1><i class="fab fa-discord"></i> Discord Reports</h1>
+            <p class="description">Zgłoś lub pochwal dowolną osobę na Discordzie używając jej Discord ID. Możesz również wyszukać osoby i ich zgłoszenia.</p>
+            <a href="https://discord.gg/Wm7mcaSAWK" class="discord-link" target="_blank">
+                <i class="fab fa-discord"></i> Dołącz do naszego serwera Discord
+            </a>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="report">
+                <i class="fas fa-flag"></i> Zgłoś/Pochwal
+            </div>
+            <div class="tab" data-tab="search">
+                <i class="fas fa-search"></i> Wyszukaj
+            </div>
+            <div class="tab" data-tab="recent">
+                <i class="fas fa-history"></i> Ostatnie zgłoszenia
+            </div>
+        </div>
+        
+        <div class="tab-content active" id="report">
+            <div class="card">
+                <h2><i class="fas fa-edit"></i> Zgłoś lub pochwal użytkownika</h2>
+                <form id="report-form">
+                    <div class="form-group">
+                        <label for="discord-id">Discord ID użytkownika</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="discord-id" placeholder="np. 123456789012345678" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="type">Typ zgłoszenia</label>
+                        <select id="type" required>
+                            <option value="">Wybierz typ</option>
+                            <option value="report">Zgłoszenie negatywne</option>
+                            <option value="praise">Pochwała</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reason">Powód</label>
+                        <textarea id="reason" rows="4" placeholder="Opisz szczegółowo powód zgłoszenia lub pochwały..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Wyślij zgłoszenie
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="search">
+            <div class="card">
+                <h2><i class="fas fa-search"></i> Wyszukaj użytkownika lub zgłoszenia</h2>
+                <div class="search-container">
+                    <div class="input-with-icon search-input">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" placeholder="Wpisz Discord ID lub fragment opisu...">
+                    </div>
+                    <button class="btn btn-primary" id="search-btn">
+                        <i class="fas fa-search"></i> Szukaj
+                    </button>
+                </div>
+                
+                <div class="search-results" id="search-results">
+                    <!-- Wyniki wyszukiwania będą wyświetlane tutaj -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="recent">
+            <div class="card">
+                <h2><i class="fas fa-history"></i> Ostatnie zgłoszenia i pochwały</h2>
+                <div id="recent-list">
+                    <!-- Ostatnie zgłoszenia będą wyświetlane tutaj -->
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Discord Reports System &copy; 2023 | Stworzone z <i class="fas fa-heart" style="color: var(--danger);"></i> dla społeczności Discord</p>
+        </footer>
+    </div>
+
+    <script>
+        // Przechowywanie danych w localStorage
+        const STORAGE_KEY = 'discordReports';
+        
+        // Pobierz dane z localStorage lub zainicjuj pustą tablicę
+        function getReports() {
+            const reports = localStorage.getItem(STORAGE_KEY);
+            return reports ? JSON.parse(reports) : [];
+        }
+        
+        // Zapisz dane do localStorage
+        function saveReports(reports) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+        }
+        
+        // Dodaj nowe zgłoszenie
+        function addReport(discordId, type, reason) {
+            const reports = getReports();
+            const newReport = {
+                id: Date.now().toString(),
+                discordId,
+                type,
+                reason,
+                date: new Date().toISOString()
+            };
+            
+            reports.unshift(newReport);
+            saveReports(reports);
+            return newReport;
+        }
+        
+        // Wyszukaj zgłoszenia
+        function searchReports(query) {
+            const reports = getReports();
+            if (!query) return [];
+            
+            return reports.filter(report => 
+                report.discordId.includes(query) || 
+                report.reason.toLowerCase().includes(query.toLowerCase())
+            );
+        }
+        
+        // Pobierz statystyki użytkownika
+        function getUserStats(discordId) {
+            const reports = getReports();
+            const userReports = reports.filter(report => report.discordId === discordId);
+            
+            return {
+                reports: userReports.filter(r => r.type === 'report').length,
+                praises: userReports.filter(r => r.type === 'praise').length,
+                allReports: userReports
+            };
+        }
+        
+        // Renderuj zgłoszenie/pochwałę
+        function renderReport(report, container) {
+            const reportElement = document.createElement('div');
+            reportElement.className = report.type === 'report' ? 'report' : 'praise';
+            
+            const date = new Date(report.date).toLocaleString('pl-PL');
+            const typeText = report.type === 'report' ? 'Zgłoszenie' : 'Pochwała';
+            const typeClass = report.type === 'report' ? 'type-report' : 'type-praise';
+            
+            reportElement.innerHTML = `
+                <div class="${report.type}-header">
+                    <div class="user-id">
+                        <i class="fas fa-user"></i> ${report.discordId}
+                        <span class="type-badge ${typeClass}">${typeText}</span>
+                    </div>
+                    <div class="date"><i class="far fa-clock"></i> ${date}</div>
+                </div>
+                <p>${report.reason}</p>
+            `;
+            
+            container.appendChild(reportElement);
+        }
+        
+        // Wyświetl stan pusty
+        function renderEmptyState(container, message, icon = 'fas fa-inbox') {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="${icon}"></i>
+                    <h3>${message}</h3>
+                </div>
+            `;
+        }
+        
+        // Obsługa formularza zgłoszenia
+        document.getElementById('report-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const discordId = document.getElementById('discord-id').value.trim();
+            const type = document.getElementById('type').value;
+            const reason = document.getElementById('reason').value.trim();
+            
+            if (!discordId || !type || !reason) {
+                alert('Proszę wypełnić wszystkie pola!');
+                return;
+            }
+            
+            // Sprawdź czy Discord ID ma odpowiedni format (18 cyfr)
+            if (!/^\d{17,20}$/.test(discordId)) {
+                alert('Nieprawidłowy format Discord ID. Powinien zawierać 17-20 cyfr.');
+                return;
+            }
+            
+            addReport(discordId, type, reason);
+            
+            // Wyczyść formularz
+            document.getElementById('report-form').reset();
+            
+            // Pokaż potwierdzenie
+            const submitBtn = document.querySelector('#report-form button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-check"></i> Wysłano!';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
+        });
+        
+        // Obsługa wyszukiwania
+        document.getElementById('search-btn').addEventListener('click', function() {
+            const query = document.getElementById('search-input').value.trim();
+            const resultsContainer = document.getElementById('search-results');
+            
+            resultsContainer.innerHTML = '';
+            
+            if (!query) {
+                renderEmptyState(resultsContainer, 'Wpisz zapytanie, aby wyszukać.', 'fas fa-search');
+                return;
+            }
+            
+            const results = searchReports(query);
+            
+            if (results.length === 0) {
+                renderEmptyState(resultsContainer, 'Brak wyników dla podanego zapytania.', 'fas fa-search-minus');
+                return;
+            }
+            
+            // Grupuj wyniki według Discord ID
+            const groupedResults = {};
+            results.forEach(report => {
+                if (!groupedResults[report.discordId]) {
+                    groupedResults[report.discordId] = [];
+                }
+                groupedResults[report.discordId].push(report);
+            });
+            
+            // Wyświetl wyniki
+            Object.keys(groupedResults).forEach(discordId => {
+                const userStats = getUserStats(discordId);
+                
+                const userCard = document.createElement('div');
+                userCard.className = 'card user-card';
+                userCard.innerHTML = `
+                    <h3><i class="fas fa-user"></i> Użytkownik: ${discordId}</h3>
+                    <div class="user-stats">
+                        <div class="stat reports-count">
+                            <div class="stat-value">${userStats.reports}</div>
+                            <div>Zgłoszenia</div>
+                        </div>
+                        <div class="stat praises-count">
+                            <div class="stat-value">${userStats.praises}</div>
+                            <div>Pochwały</div>
+                        </div>
+                    </div>
+                `;
+                
+                resultsContainer.appendChild(userCard);
+                
+                // Wyświetl wszystkie zgłoszenia dla tego użytkownika
+                userStats.allReports.forEach(report => {
+                    renderReport(report, userCard);
+                });
+            });
+        });
+        
+        // Obsługa zakładek
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Usuń klasę active ze wszystkich zakładek
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                // Dodaj klasę active do klikniętej zakładki
+                this.classList.add('active');
+                
+                // Ukryj wszystkie zawartości zakładek
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Pokaż zawartość odpowiadającą klikniętej zakładce
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Jeśli to zakładka "ostatnie", załaduj ostatnie zgłoszenia
+                if (tabId === 'recent') {
+                    loadRecentReports();
+                }
+                
+                // Jeśli to zakładka "wyszukaj", wyczyść wyniki
+                if (tabId === 'search') {
+                    document.getElementById('search-results').innerHTML = '';
+                    document.getElementById('search-input').value = '';
+                }
+            });
+        });
+        
+        // Załaduj ostatnie zgłoszenia
+        function loadRecentReports() {
+            const container = document.getElementById('recent-list');
+            const reports = getReports().slice(0, 10); // Pobierz 10 najnowszych
+            
+            container.innerHTML = '';
+            
+            if (reports.length === 0) {
+                renderEmptyState(container, 'Brak zgłoszeń. Bądź pierwszy, który doda zgłoszenie!', 'fas fa-inbox');
+                return;
+            }
+            
+            reports.forEach(report => {
+                renderReport(report, container);
+            });
+        }
+        
+        // Inicjalizacja - załaduj ostatnie zgłoszenia przy pierwszym otwarciu
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRecentReports();
+            
+            // Dodaj przykładowe dane, jeśli localStorage jest pusty
+            if (getReports().length === 0) {
+                addReport('123456789012345678', 'report', 'Użytkownik używał wulgaryzmów na kanale głosowym.');
+                addReport('987654321098765432', 'praise', 'Bardzo pomocny użytkownik, zawsze chętny do pomocy nowym członkom społeczności.');
+                addReport('555555555555555555', 'report', 'Spamowanie na czacie tekstowym mimo ostrzeżeń.');
+                addReport('777777777777777777', 'praise', 'Organizuje świetne eventy dla społeczności serwera.');
+            }
+        });
+    </script>
+</body>
+</html>
